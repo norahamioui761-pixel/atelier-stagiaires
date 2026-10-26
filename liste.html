@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Liste des stagiaires</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f3f4f6; margin: 0; padding: 20px; }
+    h1 { text-align: center; }
+    .lien { display: block; text-align: center; margin-bottom: 20px; color: #2563eb; }
+    #liste { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; max-width: 1000px; margin: 0 auto; }
+    .carte { background: #fff; border-radius: 10px; padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+    .carte img { width: 120px; height: 120px; object-fit: cover; border-radius: 50%; background: #e5e7eb; }
+    .carte h3 { margin: 12px 0 4px; font-size: 17px; }
+    .carte p { margin: 2px 0; color: #555; font-size: 14px; }
+    #etat { text-align: center; color: #555; }
+  </style>
+</head>
+<body>
+  <h1>Liste des stagiaires</h1>
+  <a class="lien" href="index.html">← Retour à l'inscription</a>
+  <p id="etat">Chargement...</p>
+  <div id="liste"></div>
+
+  <script>
+    const liste = document.getElementById('liste');
+    const etat = document.getElementById('etat');
+
+    // Image grise par défaut (si la photo n'est pas une URL Cloudinary)
+    const imageParDefaut = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><rect width="120" height="120" fill="#d1d5db"/><circle cx="60" cy="46" r="20" fill="#9ca3af"/><rect x="25" y="74" width="70" height="36" rx="18" fill="#9ca3af"/></svg>'
+    );
+
+    async function chargerStagiaires() {
+      try {
+        const reponse = await fetch('/api/liste.php');
+        const data = await reponse.json();
+
+        if (!data.success) {
+          etat.textContent = data.message || 'Erreur de chargement.';
+          return;
+        }
+
+        if (data.stagiaires.length === 0) {
+          etat.textContent = 'Aucun stagiaire pour le moment.';
+          return;
+        }
+
+        etat.style.display = 'none';
+
+        data.stagiaires.forEach((s) => {
+          const carte = document.createElement('div');
+          carte.className = 'carte';
+
+          const img = document.createElement('img');
+          img.alt = s.prenom + ' ' + s.nom;
+          img.src = s.photo && s.photo.startsWith('http') ? s.photo : imageParDefaut;
+          img.onerror = () => { img.src = imageParDefaut; };
+
+          const titre = document.createElement('h3');
+          titre.textContent = s.prenom + ' ' + s.nom;
+
+          const ville = document.createElement('p');
+          ville.textContent = s.ville;
+
+          const date = document.createElement('p');
+          date.textContent = 'Inscrit le ' + s.date_inscription;
+
+          carte.append(img, titre, ville, date);
+          liste.appendChild(carte);
+        });
+      } catch (erreur) {
+        etat.textContent = 'Impossible de contacter le serveur.';
+      }
+    }
+
+    chargerStagiaires();
+  </script>
+</body>
+</html>
