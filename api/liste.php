@@ -6,7 +6,7 @@ header('Content-Type: application/json');
 try {
     $conn = getDatabase();
     
-    // جلب photo باسم photo_url لتتوافق مع الصفحة
+    // Alias: photo AS photo_url باش يفهمها liste.html
     $result = $conn->query("SELECT id, nom, prenom, ville, photo AS photo_url FROM stagiaires ORDER BY id DESC");
     
     if (!$result) {
